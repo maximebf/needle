@@ -1,0 +1,21 @@
+{
+    "name": "maximebf/needle",
+    "version": "0.1.0",
+    "description": "Useful functions on top of Pimple",
+    "keywords": ["dependency injection", "container"],
+    "homepage": "https://github.com/maximebf/needle",
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+        "name": "Maxime Bouroumeau-Fuseau",
+        "email": "maxime.bouroumeau@gmail.com",
+        "homepage": "http://maximebf.com"
+    }],
+    "require": {
+        "php": ">=5.3.0",
+        "pimple": "1.0.x-dev"
+    },
+    "autoload": {
+        "psr-0": {"Needle": "src/"}
+    }
+}
