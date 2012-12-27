@@ -1,6 +1,5 @@
 {
     "name": "maximebf/needle",
-    "version": "0.1.0",
     "description": "Useful functions on top of Pimple",
     "keywords": ["dependency injection", "container"],
     "homepage": "https://github.com/maximebf/needle",
