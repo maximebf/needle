@@ -17,17 +17,22 @@ class Needle extends Pimple
      * Creates a new instance of $classname and injects values 
      * into its properties using {@see NeedleInjector}
      * 
-     * @param string $classname
+     * @param string $classnameOrClosure
      * @param array $properties
      * @param bool $allowUndefinedProperties
      * @param bool $useSetters
      * @return Closure
      */
-    public function inject($classname, $properties = null, $allowUndefinedProperties = false, $useSetters = false)
+    public function inject($classnameOrClosure, $properties = array(), $allowUndefinedProperties = false, $useSetters = false)
     {
-        return function($p) use ($classname, $properties, $allowUndefinedProperties, $useSetters) {
+        return function($p) use ($classnameOrClosure, $properties, $allowUndefinedProperties, $useSetters) {
+            if ($classnameOrClosure instanceof \Closure) {
+                $object = $classnameOrClosure($p);
+            } else {
+                $object = new $classnameOrClosure();
+            }
             $injector = new NeedleInjector($p);
-            return $injector->inject(new $classname(), $properties, $allowUndefinedProperties, $useSetters);
+            return $injector->inject($object, $properties, $allowUndefinedProperties, $useSetters);
         };
     }
 
@@ -44,20 +49,25 @@ class Needle extends Pimple
      * assert($user instanceof User);
      * </code>
      * 
-     * @param string $classname
+     * @param string $classnameOrClosure
      * @param array $properties
      * @param bool $allowUndefinedProperties
      * @param bool $useSetters
      * @return Closure
      */
-    public function factory($classname, $properties = null, $allowUndefinedProperties = false, $useSetters = false)
+    public function factory($classnameOrClosure, $properties = array(), $allowUndefinedProperties = false, $useSetters = false)
     {
-        return function($p) use ($classname, $properties, $allowUndefinedProperties, $useSetters) {
-            return function() use ($p, $classname, $properties, $allowUndefinedProperties, $useSetters) {
-                $class = new ReflectionClass($classname);
+        return function($p) use ($classnameOrClosure, $properties, $allowUndefinedProperties, $useSetters) {
+            return function() use ($p, $classnameOrClosure, $properties, $allowUndefinedProperties, $useSetters) {
+                $args = func_get_args();
+                if ($classnameOrClosure instanceof \Closure) {
+                    $object = $classnameOrClosure($p, $args);
+                } else {
+                    $class = new ReflectionClass($classnameOrClosure);
+                    $object = $class->newInstanceArgs($args);
+                }
                 $injector = new NeedleInjector($p);
-                return $injector->inject($class->newInstanceArgs(func_get_args()), 
-                    $properties, $allowUndefinedProperties, $useSetters);
+                return $injector->inject($object, $properties, $allowUndefinedProperties, $useSetters);
             };
         };
     }

@@ -15,6 +15,8 @@ class TestObject
      */
     protected $service2;
 
+    protected $service3;
+
     public $constructorArg;
 
     public $setterCalled = false;
@@ -38,5 +40,10 @@ class TestObject
     public function getService2()
     {
         return $this->service2;
+    }
+
+    public function getService3()
+    {
+        return $this->service3;
     }
 }

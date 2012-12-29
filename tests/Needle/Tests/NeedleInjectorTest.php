@@ -22,18 +22,20 @@ class NeedleInjectorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Service', $props['service']);
         $this->assertArrayHasKey('service2', $props);
         $this->assertEquals('Service', $props['service2']);
+        $this->assertArrayNotHasKey('service3', $props);
     }
 
     public function testInjectWithPropertiesArray()
     {
-        $props = array('service' => 'Service', 'service2' => 'Service');
+        $props = array('service2' => null, 'service3' => 'Service');
         $obj = new TestObject();
 
         $injector = new NeedleInjector($this->pimple);
         $injector->inject($obj, $props);
 
         $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());
-        $this->assertInstanceOf('Needle\Tests\Service', $obj->getService2());
+        $this->assertNull($obj->getService2());
+        $this->assertInstanceOf('Needle\Tests\Service', $obj->getService3());
         $this->assertFalse($obj->setterCalled);
     }
 
@@ -41,7 +43,7 @@ class NeedleInjectorTest extends \PHPUnit_Framework_TestCase
     {
         $obj = new TestObject();
         $injector = new NeedleInjector($this->pimple);
-        $injector->inject($obj, null, true, true);
+        $injector->inject($obj, array(), true, true);
 
         $this->assertTrue($obj->setterCalled);
         $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());

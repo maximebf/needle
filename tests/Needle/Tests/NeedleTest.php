@@ -8,23 +8,33 @@ class NeedleTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $n = new Needle();
-        $n['Service'] = function($n) { return new Service(); };
-        $n['Object'] = $n->inject('Needle\Tests\TestObject');
-        $n['ObjectFactory'] = $n->factory('Needle\Tests\TestObject');
-        $this->needle = $n;
+        $this->n = new Needle();
+        $this->n['Service'] = function($n) { return new Service(); };
     }
 
-    public function testInject()
+    public function testInjectWithClassname()
     {
-        $obj = $this->needle['Object'];
+        $this->n['Object'] = $this->n->inject('Needle\Tests\TestObject');
+
+        $obj = $this->n['Object'];
         $this->assertInstanceOf('Needle\Tests\TestObject', $obj);
         $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());
     }
 
-    public function testFactory()
+    public function testInjectWithClosure()
     {
-        $Object = $this->needle['ObjectFactory'];
+        $this->n['Object'] = $this->n->inject(function($n) { return new TestObject(); });
+
+        $obj = $this->n['Object'];
+        $this->assertInstanceOf('Needle\Tests\TestObject', $obj);
+        $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());
+    }
+
+    public function testFactoryWithClassname()
+    {
+        $this->n['ObjectFactory'] = $this->n->factory('Needle\Tests\TestObject');
+
+        $Object = $this->n['ObjectFactory'];
         $this->assertInstanceOf('Closure', $Object);
 
         $obj = $Object('foobar');
@@ -33,9 +43,26 @@ class NeedleTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());
     }
 
+    public function testFactoryWithClosure()
+    {
+        $this->n['ObjectFactory'] = $this->n->factory(function($n, $args) {
+            return new TestObject('hello world');
+        });
+
+        $Object = $this->n['ObjectFactory'];
+        $this->assertInstanceOf('Closure', $Object);
+
+        $obj = $Object('foobar');
+        $this->assertEquals('hello world', $obj->constructorArg);
+        $this->assertInstanceOf('Needle\Tests\TestObject', $obj);
+        $this->assertInstanceOf('Needle\Tests\Service', $obj->getService());
+    }
+
     public function testInvoke()
     {
-        $n = $this->needle;
+        $this->n['ObjectFactory'] = $this->n->factory('Needle\Tests\TestObject');
+        
+        $n = $this->n;
         $obj = $n('ObjectFactory', array('foobar'));
         $this->assertEquals('foobar', $obj->constructorArg);
         $this->assertInstanceOf('Needle\Tests\TestObject', $obj);

@@ -53,23 +53,22 @@ class NeedleInjector
      * @param bool $useSetters Whether to use setter methods instead of directly setting the property value
      * @return object
      */
-    public function inject($object, $properties = null, $allowUndefinedProperties = false, $useSetters = false)
+    public function inject($object, $properties = array(), $allowUndefinedProperties = false, $useSetters = false)
     {
-        if (empty($properties)) {
-            $properties = $this->extractPropertiesFromAnnotations($object);
-        }
+        $propertiesFromAnnotations = $this->extractPropertiesFromAnnotations($object);
+        $properties = array_filter(array_merge($propertiesFromAnnotations, $properties));
 
         $class = new ReflectionClass($object);
-        foreach ($properties as $propname => $type) {
+        foreach ($properties as $propname => $service) {
             if (!$class->hasProperty($propname)) {
                 if ($allowUndefinedProperties) {
-                    $object->$propname = $this->container[$type];
+                    $object->$propname = $this->container[$service];
                 }
                 continue;
             }
 
             $prop = $class->getProperty($propname);
-            $value = $this->container[$type];
+            $value = $this->container[$service];
 
             if (!$prop->isPublic()) {
                 $methodName = 'set' . ucfirst($propname);
@@ -105,15 +104,15 @@ class NeedleInjector
                 continue;
             }
             $propname = $prop->getName();
-            $type = trim($matches[1]);
-            if (empty($type)) {
+            $service = trim($matches[1]);
+            if (empty($service)) {
                 if (!preg_match('/@var\s+([a-zA-Z0-9_\\\\]+)/', $prop->getDocComment(), $varMatches)) {
                     throw new Exception(sprintf("Missing @var annotation for '%s::$%s'", 
                         $classname, $propname));
                 }
-                $type = $varMatches[1];
+                $service = $varMatches[1];
             }
-            $properties[$propname] = $type;
+            $properties[$propname] = $service;
         }
 
         return $properties;
