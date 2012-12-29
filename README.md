@@ -3,7 +3,7 @@
 
 Annotations based injection on top of [Pimple](https://github.com/fabpot/Pimple)
 
-[![Build Status](https://secure.travis-ci.org/maximebf/needle.png)](http://travis-ci.org/maximebf/needle)
+[![Build Status](https://travis-ci.org/maximebf/needle.png?branch=master)](http://travis-ci.org/maximebf/needle)
 
 ## Installation
 
