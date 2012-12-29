@@ -19,13 +19,15 @@ class Needle extends Pimple
      * 
      * @param string $classname
      * @param array $properties
+     * @param bool $allowUndefinedProperties
+     * @param bool $useSetters
      * @return Closure
      */
-    public function inject($classname, $properties = null)
+    public function inject($classname, $properties = null, $allowUndefinedProperties = false, $useSetters = false)
     {
-        return function($p) use ($classname, $properties) {
+        return function($p) use ($classname, $properties, $allowUndefinedProperties, $useSetters) {
             $injector = new NeedleInjector($p);
-            return $injector->inject(new $classname(), $properties);
+            return $injector->inject(new $classname(), $properties, $allowUndefinedProperties, $useSetters);
         };
     }
 
@@ -44,15 +46,18 @@ class Needle extends Pimple
      * 
      * @param string $classname
      * @param array $properties
+     * @param bool $allowUndefinedProperties
+     * @param bool $useSetters
      * @return Closure
      */
-    public function factory($classname, $properties = null)
+    public function factory($classname, $properties = null, $allowUndefinedProperties = false, $useSetters = false)
     {
-        return function($p) use ($classname, $properties) {
-            return function($arg) use ($p, $classname, $properties) {
+        return function($p) use ($classname, $properties, $allowUndefinedProperties, $useSetters) {
+            return function() use ($p, $classname, $properties, $allowUndefinedProperties, $useSetters) {
                 $class = new ReflectionClass($classname);
                 $injector = new NeedleInjector($p);
-                return $injector->inject($class->newInstanceArgs(func_get_args()), $properties);
+                return $injector->inject($class->newInstanceArgs(func_get_args()), 
+                    $properties, $allowUndefinedProperties, $useSetters);
             };
         };
     }
@@ -67,10 +72,9 @@ class Needle extends Pimple
      * </code>
      * 
      * @param string $id
-     * @param array $args
      * @return object
      */
-    public function __invoke($id, array $args = array())
+    public function __invoke($id, $args = array())
     {
         return call_user_func_array($this[$id], $args);
     }
